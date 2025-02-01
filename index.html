@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokédex</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #e53935;
+            margin: 0;
+            color: #333;
+            display: flex;
+        }
+
+        #sidebar {
+            width: 220px;
+            background-color: #d32f2f;
+            padding: 20px;
+            color: #fff;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        #sidebar h2 {
+            text-align: center;
+            color: #ffeb3b;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        #sidebar a {
+            color: #fff;
+            text-decoration: none;
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        #sidebar a:hover,
+        #sidebar a.active {
+            background-color: #ffeb3b;
+            color: #d32f2f;
+        }
+
+        #content {
+            margin-left: 240px;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        #generation-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #d32f2f;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        #pokemon-list {
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .pokemon-item {
+            border: 3px solid #3b4b9a;
+            border-radius: 15px;
+            width: 180px;
+            text-align: center;
+            padding: 15px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .pokemon-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .pokemon-item img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .pokemon-number {
+            font-weight: bold;
+            color: #3b4b9a;
+            font-size: 14px;
+        }
+
+        .pokemon-types {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .pokemon-type {
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: white;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        #toggle-menu {
+            display: none;
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            #sidebar {
+                transform: translateX(-100%);
+                z-index: 999;
+            }
+
+            #sidebar.show {
+                transform: translateX(0);
+            }
+
+            #content {
+                margin-left: 0;
+            }
+
+            #toggle-menu {
+                display: block;
+            }
+        }
+
+        /* Estilos para los tipos de Pokémon (sin cambios) */
+        .normal {
+            background-color: #A8A878;
+        }
+
+        .fire {
+            background-color: #F08030;
+        }
+
+        .water {
+            background-color: #6890F0;
+        }
+
+        .grass {
+            background-color: #78C850;
+        }
+
+        .electric {
+            background-color: #F8D030;
+        }
+
+        .ice {
+            background-color: #98D8D8;
+        }
+
+        .fighting {
+            background-color: #C03028;
+        }
+
+        .poison {
+            background-color: #A040A0;
+        }
+
+        .ground {
+            background-color: #E0C068;
+        }
+
+        .flying {
+            background-color: #A890F0;
+        }
+
+        .psychic {
+            background-color: #F85888;
+        }
+
+        .bug {
+            background-color: #A8B820;
+        }
+
+        .rock {
+            background-color: #B8A038;
+        }
+
+        .ghost {
+            background-color: #705898;
+        }
+
+        .dark {
+            background-color: #705848;
+        }
+
+        .dragon {
+            background-color: #7038F8;
+        }
+
+        .steel {
+            background-color: #B8B8D0;
+        }
+
+        .fairy {
+            background-color: #F0B6BC;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="toggle-menu" onclick="toggleSidebar()">☰ Menu</button>
+    <div id="sidebar">
+        <h2>Pokédex</h2>
+        <a href="#" onclick="getPokemonByGeneration(1)" data-gen="1">Generación 1</a>
+        <a href="#" onclick="getPokemonByGeneration(2)" data-gen="2">Generación 2</a>
+        <a href="#" onclick="getPokemonByGeneration(3)" data-gen="3">Generación 3</a>
+        <a href="#" onclick="getPokemonByGeneration(4)" data-gen="4">Generación 4</a>
+        <a href="#" onclick="getPokemonByGeneration(5)" data-gen="5">Generación 5</a>
+        <a href="#" onclick="getPokemonByGeneration(6)" data-gen="6">Generación 6</a>
+        <a href="#" onclick="getPokemonByGeneration(7)" data-gen="7">Generación 7</a>
+        <a href="#" onclick="getPokemonByGeneration(8)" data-gen="8">Generación 8</a>
+        <a href="#" onclick="getPokemonByGeneration(9)" data-gen="9">Generación 9</a>
+    </div>
+    <div id="content">
+        <div id="generation-title"></div>
+        <div id="pokemon-list"></div>
+    </div>
+
+    <script>
+        // El código JavaScript permanece sin cambios
+        const BASE_URL = "https://pokeapi.co/api/v2/";
+        const $pokemonList = document.querySelector("#pokemon-list");
+        const $generationTitle = document.querySelector("#generation-title");
+        const $sidebar = document.querySelector("#sidebar");
+
+        function toggleSidebar() {
+            $sidebar.classList.toggle("show");
+        }
+
+        function getPokemonByGeneration(generation) {
+            $generationTitle.textContent = `Pokémon de la Generación ${generation}`;
+            highlightActiveGeneration(generation);
+            ajax({
+                url: `${BASE_URL}generation/${generation}`,
+                done: (generationData) => {
+                    const pokemonPromises = generationData.pokemon_species.map(species => {
+                        const pokemonId = species.url.split("/")[6];
+                        return ajax({
+                            url: `${BASE_URL}pokemon/${pokemonId}`,
+                            responseType: "json",
+                            done: (data) => data,
+                            error: () => null
+                        });
+                    });
+
+                    Promise.all(pokemonPromises).then(pokemonData => {
+                        const filteredPokemonData = pokemonData.filter(pokemon => pokemon !== null);
+                        filteredPokemonData.sort((a, b) => a.id - b.id);
+                        renderPokemonList(filteredPokemonData);
+                    });
+                },
+                error: renderError,
+            });
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+        }
+
+        function highlightActiveGeneration(generation) {
+            const links = document.querySelectorAll("#sidebar a");
+            links.forEach(link => {
+                link.classList.remove("active");
+                if (link.getAttribute("data-gen") == generation) {
+                    link.classList.add("active");
+                }
+            });
+        }
+
+        function renderPokemonList(pokemonData) {
+            $pokemonList.innerHTML = "";
+            pokemonData.forEach(pokemon => {
+                const item = document.createElement("div");
+                item.className = "pokemon-item";
+
+                const img = document.createElement("img");
+                img.src = pokemon.sprites.front_default;
+                img.alt = pokemon.name;
+
+                const number = document.createElement("p");
+                number.className = "pokemon-number";
+                number.textContent = `#${pokemon.id.toString().padStart(3, '0')}`;
+
+                const name = document.createElement("p");
+                name.textContent = pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1);
+
+                const types = document.createElement("div");
+                types.className = "pokemon-types";
+                pokemon.types.forEach(typeInfo => {
+                    const typeSpan = document.createElement("span");
+                    typeSpan.className = `pokemon-type ${typeInfo.type.name}`;
+                    typeSpan.textContent = typeInfo.type.name;
+                    types.appendChild(typeSpan);
+                });
+
+                item.appendChild(img);
+                item.appendChild(number);
+                item.appendChild(name);
+                item.appendChild(types);
+
+                $pokemonList.appendChild(item);
+            });
+        }
+
+        function renderError(status) {
+            $pokemonList.innerHTML = "Error al cargar los Pokémon. Por favor, intenta de nuevo.";
+        }
+
+        function ajax({ url, method = "GET", async = true, done = () => { }, error = () => { }, responseType = "json" }) {
+            return new Promise((resolve, reject) => {
+                const request = new XMLHttpRequest();
+                request.responseType = responseType;
+
+                request.onreadystatechange = () => {
+                    if (request.readyState === 4) {
+                        if (request.status === 200) {
+                            resolve(done(request.response));
+                        } else {
+                            reject(error(request.status));
+                        }
+                    }
+                };
+
+                request.open(method, url, async);
+                request.send(null);
+            });
+        }
+
+        getPokemonByGeneration(1);
+    </script>
+</body>
+
+</html>
